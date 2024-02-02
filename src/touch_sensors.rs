@@ -45,7 +45,7 @@ impl Format for CalibrationDataSet {
         write!(f, "{}: ", self.status);
         let mut first = true;
         for pin_data in self.pins {
-            if first == false {
+            if !first {
                 write!(f, ", ");
             } else {
                 first = false;
@@ -83,7 +83,7 @@ impl<'a> TouchSensors<'a> {
             threshold,
         }
     }
-    pub async fn calibrate_start(&mut self) -> () {
+    pub async fn calibrate_start(&mut self) {
         info!("Calibration start");
         self.calibration = Default::default();
     }
@@ -204,7 +204,7 @@ impl<'a> TouchSensors<'a> {
         );
         self.calibration
     }
-    pub async fn run(&mut self) -> () {
+    pub async fn run(&mut self) {
         for pin in &mut self.pins {
             pin.set_as_output();
             pin.set_high();
@@ -237,9 +237,6 @@ impl<'a> TouchSensors<'a> {
             } else if off[i] {
                 info!("PIN {}  OFF", i)
             }
-            //else if late[i] {
-            //    info!("PIN {}  late", i)
-            //}
             else {
                 info!("PIN {} ON", i)
             }

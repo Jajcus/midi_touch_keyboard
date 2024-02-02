@@ -82,8 +82,8 @@ async fn measure_task<'a>(mut leds: WS2812B, mut sensors: TouchSensors<'a>, butt
     }
 
     loop {
-        for i in 0..NUM_LEDS {
-            colors[i] = 0x020100;
+        for c in &mut colors {
+            *c = 0x020100;
         }
         leds.write(&colors).await;
 
@@ -92,7 +92,7 @@ async fn measure_task<'a>(mut leds: WS2812B, mut sensors: TouchSensors<'a>, butt
         while !button.was_pressed() {
             let calib = sensors.calibrate_step().await;
             info!("{}", calib);
-            for i in 0..NUM_LEDS {
+            for (i, color) in colors.iter_mut().enumerate().take(NUM_LEDS) {
                 let sensor_num = i as i32 - FIRST_SENSOR_LED;
                 let status = if sensor_num >= 0 && sensor_num < (NUM_SENSORS as i32) {
                     calib.pins[sensor_num as usize].status
@@ -100,7 +100,7 @@ async fn measure_task<'a>(mut leds: WS2812B, mut sensors: TouchSensors<'a>, butt
                     CalibrationStatus::NA
                 };
 
-                colors[i] = match status {
+                *color = match status {
                     CalibrationStatus::NA => 0x020100,
                     CalibrationStatus::Ok => 0x000200,
                     CalibrationStatus::Bad => 0x040000,

@@ -26,11 +26,12 @@ impl<'a> Button<'a> {
     }
     #[allow(dead_code)]
     pub fn is_pressed(&self) -> bool {
-        return self.pressed.get();
+        self.pressed.get()
     }
     pub fn was_pressed(&self) -> bool {
-        return self.pressed_was.replace(false);
+        self.pressed_was.replace(false)
     }
+    #[allow(clippy::await_holding_refcell_ref)]
     pub async fn task(&self) -> ! {
         let mut pin = self.pin.borrow_mut();
         let mut pressed = pin.is_low();

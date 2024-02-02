@@ -42,7 +42,7 @@ impl WS2812B {
             last_write: Instant::now(),
         }
     }
-    pub async fn write(&mut self, colors: &[u32]) -> () {
+    pub async fn write(&mut self, colors: &[u32]) {
         let elapsed = self.last_write.elapsed().as_micros();
         // minimum break 50us, but flushing the FIFO may take over 250us
         if elapsed < 320 {
