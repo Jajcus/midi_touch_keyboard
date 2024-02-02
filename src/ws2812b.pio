@@ -1,0 +1,18 @@
+
+		; 1tick = 0.05us
+
+.program	ws2812b
+.side_set	1
+
+loop:
+		out x, 1   	side 1 		; [T-...]   read bit, keep 0 until there is data to read
+		jmp !x, one	side 0		; [T+0]     select branch, set output to '1'
+
+zero:
+		nop 		side 0 [15]	; [T+0.05]  wait with 1 0.35us (total: 0.4us)
+		jmp loop	side 1 [7]     ; [T+0.4]   wait with 0 0.8us and return to the start
+
+one:
+		nop 		side 0 [6]	; [T+0.5]   wait with 1 0.8us (total: 0.85us)
+		jmp loop	side 1 [14]      ; [T+0.85]  wait with 0 0.45us and return to the start
+
