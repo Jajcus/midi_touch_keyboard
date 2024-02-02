@@ -2,11 +2,11 @@
 
 use embassy_rp::gpio::{Input, Pin, Pull};
 use embassy_rp::Peripheral;
-use embassy_time::{Duration, Timer};
+use embassy_time::Timer;
 
 use core::cell::{Cell, RefCell};
 
-const DEBOUNCE_TIME: Duration = Duration::from_millis(2);
+use crate::config::*;
 
 pub struct Button<'a> {
     pin: RefCell<Input<'a>>,

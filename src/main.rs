@@ -14,19 +14,14 @@ use gpio::{Flex, Level, Output};
 use {defmt_rtt as _, panic_probe as _};
 
 mod button;
+mod config;
 mod touch_sensors;
 mod ws2812b;
 
 use crate::button::Button;
-use crate::touch_sensors::{CalibrationStatus, TouchSensors, NUM_SENSORS};
+use crate::config::*;
+use crate::touch_sensors::{CalibrationStatus, TouchSensors};
 use crate::ws2812b::WS2812B;
-
-const NUM_LEDS: usize = 9;
-const FIRST_SENSOR_LED: i32 = -3;
-
-const WELCOME_COLORS: [u32; NUM_LEDS] = [
-    0x80000, 0x008000, 0x000080, 0x40000, 0x004000, 0x000040, 0x20000, 0x002000, 0x000020,
-];
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {

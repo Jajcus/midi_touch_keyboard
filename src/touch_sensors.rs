@@ -3,10 +3,7 @@ use defmt::{info, write, Format, Formatter};
 use embassy_rp::gpio::{Flex, Pull};
 use embassy_time::{Duration, Instant, Timer};
 
-pub const NUM_SENSORS: usize = 16;
-pub const CALIBRATION_STEP_TIME: Duration = Duration::from_micros(5000);
-pub const MIN_TIME_REQUIRED: Duration = Duration::from_micros(10);
-pub const MIN_MARGIN_REQUIRED: Duration = Duration::from_micros(100);
+use crate::config::*;
 
 #[derive(Default, Clone, Copy, Format, PartialEq)]
 pub enum CalibrationStatus {
@@ -236,8 +233,7 @@ impl<'a> TouchSensors<'a> {
                 info!("PIN {}  early", i)
             } else if off[i] {
                 info!("PIN {}  OFF", i)
-            }
-            else {
+            } else {
                 info!("PIN {} ON", i)
             }
         }
