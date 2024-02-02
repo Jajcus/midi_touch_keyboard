@@ -1,4 +1,4 @@
-use defmt::{info, write, Format, Formatter};
+use defmt::{debug, info, write, Format, Formatter};
 
 use embassy_rp::gpio::{Flex, Pull};
 use embassy_time::{Duration, Instant, Timer};
@@ -58,6 +58,14 @@ impl Format for CalibrationDataSet {
             write!(f, "]");
         }
     }
+}
+
+#[derive(Default, Clone, Copy, Format, PartialEq)]
+pub enum TouchSensorStatus {
+    #[default]
+    NA,
+    On,
+    Off,
 }
 
 pub struct TouchSensors<'a> {
@@ -201,13 +209,12 @@ impl<'a> TouchSensors<'a> {
         );
         self.calibration
     }
-    pub async fn run(&mut self) {
+    pub async fn take_sample(&mut self) -> [TouchSensorStatus; NUM_SENSORS] {
         for pin in &mut self.pins {
             pin.set_as_output();
             pin.set_high();
         }
 
-        info!("set high!");
         Timer::after(Duration::from_micros(1)).await;
 
         let t0 = Instant::now();
@@ -216,26 +223,29 @@ impl<'a> TouchSensors<'a> {
             pin.set_as_input();
         }
 
-        Timer::at(t0 + MIN_TIME_REQUIRED).await;
-
-        let early: [bool; NUM_SENSORS] = core::array::from_fn(|i| self.pins[i].is_low());
-
         Timer::at(t0 + self.threshold).await;
+        let on: [bool; NUM_SENSORS] = core::array::from_fn(|i| self.pins[i].is_high());
 
-        let off: [bool; NUM_SENSORS] = core::array::from_fn(|i| self.pins[i].is_low());
-
-        //Timer::at(t0 + self.time_max).await;
-        //
-        //let late: [bool;NUM_SENSORS] = core::array::from_fn(|i| self.pins[i].is_low());
-
-        for i in 0..NUM_SENSORS {
-            if early[i] {
-                info!("PIN {}  early", i)
-            } else if off[i] {
-                info!("PIN {}  OFF", i)
-            } else {
-                info!("PIN {} ON", i)
+        core::array::from_fn(|i| match (self.calibration.pins[i].status, on[i]) {
+            (CalibrationStatus::Ok, true) => TouchSensorStatus::On,
+            (CalibrationStatus::NA, true) => TouchSensorStatus::On,
+            (CalibrationStatus::Ok, false) => TouchSensorStatus::Off,
+            (CalibrationStatus::NA, false) => TouchSensorStatus::Off,
+            (CalibrationStatus::Bad, _) => TouchSensorStatus::NA,
+        })
+    }
+    pub async fn run(&mut self) -> [TouchSensorStatus; NUM_SENSORS] {
+        let mut result = self.take_sample().await;
+        debug!("sample: {}", result);
+        for _i in 0..(SENSOR_SAMPLES - 1) {
+            let new_sample = self.take_sample().await;
+            debug!("sample: {}", new_sample);
+            for (fin, cur) in result.iter_mut().zip(new_sample.iter()) {
+                if *fin != *cur {
+                    *fin = TouchSensorStatus::NA;
+                }
             }
         }
+        result
     }
 }
