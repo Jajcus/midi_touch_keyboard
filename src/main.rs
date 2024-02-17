@@ -100,7 +100,7 @@ async fn measure_task<'a>(mut leds: WS2812B, mut sensors: TouchSensors<'a>, butt
                 } * if i == cycle { 4 } else { 1 };
             }
             leds.write(&colors).await;
-            cycle = (cycle + 1) % NUM_LEDS;
+            cycle = (cycle + 1) % NUM_SENSORS;
             Timer::after_millis(100).await;
         }
         let result = sensors.calibrate_stop().await;

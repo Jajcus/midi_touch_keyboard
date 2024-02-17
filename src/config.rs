@@ -10,9 +10,11 @@ pub const MIN_TIME_REQUIRED: Duration = Duration::from_micros(10);
 pub const MIN_MARGIN_REQUIRED: Duration = Duration::from_micros(100);
 
 // leds
-pub const NUM_LEDS: usize = 9;
+pub const NUM_LEDS: usize = 19;
 pub const WELCOME_COLORS: [u32; NUM_LEDS] = [
     0x80000, 0x008000, 0x000080, 0x40000, 0x004000, 0x000040, 0x20000, 0x002000, 0x000020,
+    0x80000, 0x008000, 0x000080, 0x40000, 0x004000, 0x000040, 0x20000, 0x002000, 0x000020,
+    0x10000
 ];
 
 pub const COL_OFF: u32 = 0x020202;
@@ -26,22 +28,22 @@ pub const COL_CAL_OK: u32 = 0x000200;
 pub const COL_CAL_BAD: u32 = 0x040000;
 
 pub const SENSOR_TO_LED: [Option<usize>; NUM_SENSORS] = [
-    None,
-    None,
-    None,
-    None,
-    Some(0),
-    Some(1),
-    Some(2),
-    Some(3),
-    Some(4),
-    Some(5),
-    Some(6),
+    Some(9),
+    Some(8),
+    Some(11),
     Some(7),
-    None,
-    None,
-    None,
-    None,
+    Some(12),
+    Some(6),
+    Some(5),
+    Some(14),
+    Some(4),
+    Some(15),
+    Some(3),
+    Some(16),
+    Some(2),
+    Some(1),
+    Some(18),
+    Some(0),
 ];
 
 // button
