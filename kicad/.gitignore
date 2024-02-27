@@ -2,3 +2,4 @@ fp-info-cache
 *.bak
 *.log
 touch_keyboard-backups/
+bom/
