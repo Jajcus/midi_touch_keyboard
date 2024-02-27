@@ -5,19 +5,20 @@
 #![no_std]
 #![no_main]
 
-use defmt::*;
+use defmt::{unreachable, *};
 use embassy_executor::Spawner;
-use embassy_futures::join::join;
-use embassy_rp::gpio;
+use embassy_futures::join::join3;
 use embassy_time::{Duration, Timer};
-use gpio::{Flex, Level, Output};
 use {defmt_rtt as _, panic_probe as _};
 
+mod adc;
+mod board;
 mod button;
 mod config;
 mod touch_sensors;
 mod ws2812b;
 
+use crate::adc::{Adc, AdcValues};
 use crate::button::Button;
 use crate::config::*;
 use crate::touch_sensors::{CalibrationStatus, TouchSensorStatus, TouchSensors};
@@ -26,7 +27,9 @@ use crate::ws2812b::WS2812B;
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
     let p = embassy_rp::init(Default::default());
-    let mut led = Output::new(p.PIN_25, Level::Low);
+    let b = crate::board::init(p);
+
+    let mut led = b.led_out;
 
     info!("Minimal duration: {}ms", Duration::MIN.as_micros());
 
@@ -35,34 +38,28 @@ async fn main(_spawner: Spawner) {
 
     //let mut output_pin = Output::new(p.PIN_22, Level::Low);
 
-    let leds = WS2812B::new(p.PIO0, p.PIN_26);
-    let sensors = TouchSensors::new([
-        Flex::new(p.PIN_6),
-        Flex::new(p.PIN_7),
-        Flex::new(p.PIN_8),
-        Flex::new(p.PIN_9),
-        Flex::new(p.PIN_10),
-        Flex::new(p.PIN_11),
-        Flex::new(p.PIN_12),
-        Flex::new(p.PIN_13),
-        Flex::new(p.PIN_14),
-        Flex::new(p.PIN_15),
-        Flex::new(p.PIN_16),
-        Flex::new(p.PIN_17),
-        Flex::new(p.PIN_18),
-        Flex::new(p.PIN_19),
-        Flex::new(p.PIN_20),
-        Flex::new(p.PIN_21),
-    ]);
-    let button = Button::new(p.PIN_5);
+    let leds = WS2812B::new(b.leds_pio, b.leds_pin);
+    let sensors = TouchSensors::new(b.sensor_pins);
+
+    let adc_values = AdcValues::new();
+    let button = Button::new(b.button_in);
+    let adc = Adc::new(b.adc, b.adc_pins, &adc_values).unwrap();
 
     let bt_task = button.task();
-    let main_task = measure_task(leds, sensors, &button);
+    let adc_task = adc.task();
+    let main_task = measure_task(leds, sensors, &button, &adc_values);
 
-    join(main_task, bt_task).await;
+    join3(main_task, bt_task, adc_task).await;
+
+    unreachable!();
 }
 
-async fn measure_task<'a>(mut leds: WS2812B, mut sensors: TouchSensors<'a>, button: &Button<'a>) {
+async fn measure_task<'a>(
+    mut leds: WS2812B,
+    mut sensors: TouchSensors<'a>,
+    button: &Button<'a>,
+    adc_values: &'a AdcValues,
+) {
     let mut colors = [COL_UNUSED; NUM_LEDS];
 
     for i in 0..NUM_LEDS {
@@ -85,6 +82,7 @@ async fn measure_task<'a>(mut leds: WS2812B, mut sensors: TouchSensors<'a>, butt
         while !button.was_pressed() {
             let calib = sensors.calibrate_step().await;
             info!("{}", calib);
+            info!("sens: {}%", adc_values.get_value(0, 100));
             for (i, which_led) in SENSOR_TO_LED.iter().enumerate().take(NUM_SENSORS) {
                 let color = match which_led {
                     None => {

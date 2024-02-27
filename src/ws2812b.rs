@@ -7,6 +7,8 @@ use embassy_time::{Instant, Timer};
 use fixed::traits::ToFixed;
 use fixed_macro::types::U56F8;
 
+use crate::board::LedsPio;
+
 bind_interrupts!(struct Irqs {
     PIO0_IRQ_0 => pio::InterruptHandler<peripherals::PIO0>;
 });
@@ -18,7 +20,7 @@ pub struct WS2812B {
 
 impl WS2812B {
     pub fn new(
-        pio_per: impl Peripheral<P = peripherals::PIO0> + 'static,
+        pio_per: impl Peripheral<P = LedsPio> + 'static,
         pin: impl pio::PioPin + 'static,
     ) -> Self {
         let mut pio = pio::Pio::new(pio_per, Irqs);

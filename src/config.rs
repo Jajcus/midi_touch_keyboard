@@ -12,9 +12,8 @@ pub const MIN_MARGIN_REQUIRED: Duration = Duration::from_micros(100);
 // leds
 pub const NUM_LEDS: usize = 19;
 pub const WELCOME_COLORS: [u32; NUM_LEDS] = [
-    0x80000, 0x008000, 0x000080, 0x40000, 0x004000, 0x000040, 0x20000, 0x002000, 0x000020,
-    0x80000, 0x008000, 0x000080, 0x40000, 0x004000, 0x000040, 0x20000, 0x002000, 0x000020,
-    0x10000
+    0x80000, 0x008000, 0x000080, 0x40000, 0x004000, 0x000040, 0x20000, 0x002000, 0x000020, 0x80000,
+    0x008000, 0x000080, 0x40000, 0x004000, 0x000040, 0x20000, 0x002000, 0x000020, 0x10000,
 ];
 
 pub const COL_OFF: u32 = 0x020202;
@@ -48,3 +47,6 @@ pub const SENSOR_TO_LED: [Option<usize>; NUM_SENSORS] = [
 
 // button
 pub const DEBOUNCE_TIME: Duration = Duration::from_millis(2);
+
+// adc
+pub const ADC_INTERVAL: Duration = Duration::from_millis(10);

@@ -1,7 +1,6 @@
 // Debounced button
 
-use embassy_rp::gpio::{Input, Pin, Pull};
-use embassy_rp::Peripheral;
+use embassy_rp::gpio::Input;
 use embassy_time::Timer;
 
 use core::cell::{Cell, RefCell};
@@ -15,8 +14,7 @@ pub struct Button<'a> {
 }
 
 impl<'a> Button<'a> {
-    pub fn new(pin: impl Peripheral<P = impl Pin> + 'a) -> Self {
-        let mut pin = Input::new(pin, Pull::Up);
+    pub fn new(mut pin: Input<'a>) -> Self {
         pin.set_schmitt(true);
         Self {
             pin: pin.into(),
