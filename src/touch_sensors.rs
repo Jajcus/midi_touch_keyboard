@@ -188,12 +188,11 @@ impl<'a> TouchSensors<'a> {
                         max_min.as_micros(),
                         min_max.as_micros()
                     );
-                    self.calibration.status = CalibrationStatus::Bad;
-                    self.threshold =
-                        self.calibration.all.min_time + self.calibration.all.max_time / 2;
                 } else {
-                    self.threshold = max_min + min_max / 2;
+                    self.calibration.all.min_time = max_min;
+                    self.calibration.all.max_time = min_max;
                 };
+                self.threshold = self.calibration.all.min_time + self.calibration.all.max_time / 2;
                 self.calibration.status = CalibrationStatus::Ok;
             }
             (_, _) => {
@@ -207,7 +206,13 @@ impl<'a> TouchSensors<'a> {
             self.calibration.status,
             self.threshold.as_micros()
         );
+        self.calibration.all.status = self.calibration.status;
         self.calibration
+    }
+    pub fn set_sensitivity(&mut self, permile: u32) {
+
+        let range = self.calibration.all.max_time - self.calibration.all.min_time;
+        self.threshold = self.calibration.all.min_time + range * (1000 - permile) / 1000;
     }
     pub async fn take_sample(&mut self) -> [TouchSensorStatus; NUM_SENSORS] {
         for pin in &mut self.pins {

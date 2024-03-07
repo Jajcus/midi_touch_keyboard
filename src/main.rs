@@ -125,6 +125,8 @@ async fn measure_task<'a>(
 
         let mut prev_status = [TouchSensorStatus::NA; NUM_SENSORS];
         while !button.was_pressed() {
+            let sens = adc_values.get_value(0, 1000).unwrap_or(500);
+            sensors.set_sensitivity(sens);
             let status = sensors.run().await;
             debug!("Status: {}", status);
             debug!("Previous: {}", prev_status);
