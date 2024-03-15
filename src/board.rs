@@ -25,7 +25,7 @@ pub struct BoardSetup {
 pub fn init(p: Peripherals) -> BoardSetup {
     BoardSetup {
         led_out: Output::new(p.PIN_25, Level::Low),
-        button_in: Input::new(p.PIN_5, Pull::Up),
+        button_in: Input::new(p.PIN_4, Pull::Up),
 
         leds_pio: p.PIO0,
         leds_pin: p.PIN_27,
