@@ -301,7 +301,7 @@ version = "0.1.0"
 source = "git+https://github.com/embassy-rs/embassy.git#dcce40c8a2eefb956ffadbfcc3db6c27cde55dab"
 dependencies = [
  "embassy-futures 0.1.1 (git+https://github.com/embassy-rs/embassy.git)",
- "embassy-sync",
+ "embassy-sync 0.5.0 (git+https://github.com/embassy-rs/embassy.git)",
  "embassy-time 0.3.0 (git+https://github.com/embassy-rs/embassy.git)",
  "embedded-hal 0.2.7",
  "embedded-hal 1.0.0",
@@ -378,7 +378,7 @@ dependencies = [
  "embassy-embedded-hal",
  "embassy-futures 0.1.1 (git+https://github.com/embassy-rs/embassy.git)",
  "embassy-hal-internal",
- "embassy-sync",
+ "embassy-sync 0.5.0 (git+https://github.com/embassy-rs/embassy.git)",
  "embassy-time 0.3.0 (git+https://github.com/embassy-rs/embassy.git)",
  "embassy-time-driver",
  "embassy-usb-driver",
@@ -398,6 +398,20 @@ dependencies = [
  "rand_core",
  "rp-pac",
  "rp2040-boot2",
+]
+
+[[package]]
+name = "embassy-sync"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd938f25c0798db4280fcd8026bf4c2f48789aebf8f77b6e5cf8a7693ba114ec"
+dependencies = [
+ "cfg-if",
+ "critical-section",
+ "defmt",
+ "embedded-io-async",
+ "futures-util",
+ "heapless",
 ]
 
 [[package]]
@@ -1341,7 +1355,9 @@ dependencies = [
  "embassy-executor",
  "embassy-futures 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "embassy-rp",
+ "embassy-sync 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "embassy-time 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "embedded-io-async",
  "fixed",
  "fixed-macro",
  "panic-probe",

@@ -210,7 +210,6 @@ impl<'a> TouchSensors<'a> {
         self.calibration
     }
     pub fn set_sensitivity(&mut self, permile: u32) {
-
         let range = self.calibration.all.max_time - self.calibration.all.min_time;
         self.threshold = self.calibration.all.min_time + range * (1000 - permile) / 1000;
     }

@@ -1,3 +1,4 @@
+use embassy_rp::bind_interrupts;
 use embassy_rp::gpio::{Flex, Input, Level, Output, Pull};
 use embassy_rp::peripherals::*;
 use embassy_rp::Peripherals;
@@ -8,6 +9,13 @@ pub type LedsPio = PIO0;
 pub type LedsPin = PIN_27;
 
 pub type AdcPins = (PIN_28, PIN_29);
+
+pub type MidiUart = UART0;
+pub type MidiTxPin = PIN_0;
+
+bind_interrupts!(pub struct Irqs {
+    UART0_IRQ => embassy_rp::uart::BufferedInterruptHandler<MidiUart>;
+});
 
 pub struct BoardSetup {
     pub led_out: Output<'static>,
@@ -20,6 +28,9 @@ pub struct BoardSetup {
 
     pub adc: ADC,
     pub adc_pins: AdcPins,
+
+    pub midi_uart: MidiUart,
+    pub midi_tx_pin: MidiTxPin,
 }
 
 pub fn init(p: Peripherals) -> BoardSetup {
@@ -50,5 +61,7 @@ pub fn init(p: Peripherals) -> BoardSetup {
         ],
         adc: p.ADC,
         adc_pins: (p.PIN_28, p.PIN_29),
+        midi_uart: p.UART0,
+        midi_tx_pin: p.PIN_0,
     }
 }

@@ -45,8 +45,36 @@ pub const SENSOR_TO_LED: [Option<usize>; NUM_SENSORS] = [
     Some(0),
 ];
 
+pub const ROOT_NOTE: i8 = 60;
+
+// mapping of sensors to MIDI notes (MIDI number of the root note will be added)
+pub const SENSOR_TO_NOTE: [Option<i8>; NUM_SENSORS] = [
+    Some(-1), // B
+    Some(0),  // C
+    Some(1),  // C#
+    Some(2),  // D
+    Some(3),  // D#
+    Some(4),  // E
+    Some(5),  // F
+    Some(6),  // F#
+    Some(7),  // G
+    Some(8),  // G#
+    Some(9),  // A
+    Some(10), // A#
+    Some(11), // B
+    Some(12), // C
+    Some(13), // C#
+    Some(14), // D
+];
+
 // button
 pub const DEBOUNCE_TIME: Duration = Duration::from_millis(2);
 
 // adc
 pub const ADC_INTERVAL: Duration = Duration::from_millis(10);
+
+// MIDI
+pub const MIDI_CHANNEL_SIZE: usize = 16;
+
+// serial MIDI
+pub const SERIAL_MIDI_BUF_LEN: usize = 128;
