@@ -1,5 +1,5 @@
 use defmt::Format;
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
+use embassy_sync::blocking_mutex::raw::{NoopRawMutex, CriticalSectionRawMutex};
 use embassy_sync::channel::{Channel, Receiver, Sender};
 
 use crate::config::MIDI_CHANNEL_SIZE;
@@ -34,4 +34,9 @@ impl MidiMsg {
 
 pub type MidiChannel = Channel<NoopRawMutex, MidiMsg, MIDI_CHANNEL_SIZE>;
 pub type MidiChannelReceiver<'ch> = Receiver<'ch, NoopRawMutex, MidiMsg, MIDI_CHANNEL_SIZE>;
+#[allow(dead_code)]
 pub type MidiChannelSender<'ch> = Sender<'ch, NoopRawMutex, MidiMsg, MIDI_CHANNEL_SIZE>;
+
+pub type MidiChannelMC = Channel<CriticalSectionRawMutex, MidiMsg, MIDI_CHANNEL_SIZE>;
+pub type MidiChannelMCReceiver<'ch> = Receiver<'ch, CriticalSectionRawMutex, MidiMsg, MIDI_CHANNEL_SIZE>;
+pub type MidiChannelMCSender<'ch> = Sender<'ch, CriticalSectionRawMutex, MidiMsg, MIDI_CHANNEL_SIZE>;

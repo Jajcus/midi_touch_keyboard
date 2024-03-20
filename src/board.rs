@@ -17,8 +17,7 @@ bind_interrupts!(pub struct Irqs {
     UART0_IRQ => embassy_rp::uart::BufferedInterruptHandler<MidiUart>;
 });
 
-pub struct BoardSetup {
-    pub led_out: Output<'static>,
+pub struct Core0Pers {
     pub button_in: Input<'static>,
 
     pub leds_pio: LedsPio,
@@ -28,40 +27,57 @@ pub struct BoardSetup {
 
     pub adc: ADC,
     pub adc_pins: AdcPins,
+}
 
+pub struct Core1Pers {
     pub midi_uart: MidiUart,
     pub midi_tx_pin: MidiTxPin,
+}
+
+pub struct BoardSetup {
+    pub led_out: Output<'static>,
+
+    pub core0: Core0Pers,
+
+    pub core1: Core1Pers,
+    pub core1_core: CORE1,
 }
 
 pub fn init(p: Peripherals) -> BoardSetup {
     BoardSetup {
         led_out: Output::new(p.PIN_25, Level::Low),
-        button_in: Input::new(p.PIN_4, Pull::Up),
 
-        leds_pio: p.PIO0,
-        leds_pin: p.PIN_27,
+        core0: Core0Pers {
+            button_in: Input::new(p.PIN_4, Pull::Up),
 
-        sensor_pins: [
-            Flex::new(p.PIN_6),
-            Flex::new(p.PIN_7),
-            Flex::new(p.PIN_8),
-            Flex::new(p.PIN_9),
-            Flex::new(p.PIN_10),
-            Flex::new(p.PIN_11),
-            Flex::new(p.PIN_12),
-            Flex::new(p.PIN_13),
-            Flex::new(p.PIN_14),
-            Flex::new(p.PIN_15),
-            Flex::new(p.PIN_16),
-            Flex::new(p.PIN_17),
-            Flex::new(p.PIN_18),
-            Flex::new(p.PIN_19),
-            Flex::new(p.PIN_20),
-            Flex::new(p.PIN_21),
-        ],
-        adc: p.ADC,
-        adc_pins: (p.PIN_28, p.PIN_29),
-        midi_uart: p.UART0,
-        midi_tx_pin: p.PIN_0,
+            leds_pio: p.PIO0,
+            leds_pin: p.PIN_27,
+
+            sensor_pins: [
+                Flex::new(p.PIN_6),
+                Flex::new(p.PIN_7),
+                Flex::new(p.PIN_8),
+                Flex::new(p.PIN_9),
+                Flex::new(p.PIN_10),
+                Flex::new(p.PIN_11),
+                Flex::new(p.PIN_12),
+                Flex::new(p.PIN_13),
+                Flex::new(p.PIN_14),
+                Flex::new(p.PIN_15),
+                Flex::new(p.PIN_16),
+                Flex::new(p.PIN_17),
+                Flex::new(p.PIN_18),
+                Flex::new(p.PIN_19),
+                Flex::new(p.PIN_20),
+                Flex::new(p.PIN_21),
+            ],
+            adc: p.ADC,
+            adc_pins: (p.PIN_28, p.PIN_29),
+        },
+        core1: Core1Pers {
+            midi_uart: p.UART0,
+            midi_tx_pin: p.PIN_0,
+        },
+        core1_core: p.CORE1,
     }
 }

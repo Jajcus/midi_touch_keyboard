@@ -6,10 +6,12 @@
 #![no_main]
 
 use defmt::{unreachable, *};
-use embassy_executor::Spawner;
-use embassy_futures::join::join4;
+use embassy_futures::join::{join3, join};
 use embassy_time::{Duration, Timer};
+use embassy_executor::Executor;
 use {defmt_rtt as _, panic_probe as _};
+use embassy_rp::multicore::{spawn_core1, Stack};
+use static_cell::StaticCell;
 
 mod adc;
 mod board;
@@ -23,13 +25,17 @@ mod ws2812b;
 use crate::adc::{Adc, AdcValues};
 use crate::button::Button;
 use crate::config::*;
-use crate::midi::{MidiChannel, MidiChannelSender, MidiMsg};
+use crate::midi::{MidiChannel, MidiChannelMC, MidiChannelMCSender, MidiChannelMCReceiver, MidiMsg};
 use crate::serial_midi::SerialMidi;
 use crate::touch_sensors::{CalibrationStatus, TouchSensorStatus, TouchSensors};
 use crate::ws2812b::WS2812B;
 
-#[embassy_executor::main]
-async fn main(_spawner: Spawner) {
+static EXECUTOR0: StaticCell<Executor> = StaticCell::new();
+static EXECUTOR1: StaticCell<Executor> = StaticCell::new();
+static mut CORE1_STACK: Stack<81920> = Stack::new();
+
+#[cortex_m_rt::entry]
+fn main() -> ! {
     let p = embassy_rp::init(Default::default());
     let b = crate::board::init(p);
 
@@ -40,22 +46,56 @@ async fn main(_spawner: Spawner) {
     info!("led on!");
     led.set_high();
 
-    let midi_channel = MidiChannel::new();
+    static MIDI_CHANNEL: MidiChannelMC = MidiChannelMC::new();
+
+    spawn_core1(b.core1_core, unsafe { &mut CORE1_STACK }, move || {
+        let executor1 = EXECUTOR1.init(Executor::new());
+        executor1
+            .run(|spawner| unwrap!(spawner.spawn(core1_task(b.core1, MIDI_CHANNEL.receiver()))))
+    });
+
+    let executor0 = EXECUTOR0.init(Executor::new());
+    executor0.run(|spawner| {
+        unwrap!(spawner.spawn(core0_task(b.core0, MIDI_CHANNEL.sender())))
+    })
+}
+
+#[embassy_executor::task]
+async fn core0_task(b: crate::board::Core0Pers, midi_tx: MidiChannelMCSender<'static>) -> ! {
+
     let leds = WS2812B::new(b.leds_pio, b.leds_pin);
     let sensors = TouchSensors::new(b.sensor_pins);
 
     let adc_values = AdcValues::new();
     let button = Button::new(b.button_in);
     let adc = Adc::new(b.adc, b.adc_pins, &adc_values).unwrap();
-    let mut midi = SerialMidi::new(b.midi_uart, b.midi_tx_pin, midi_channel.receiver());
 
-    let midi_task = midi.task();
     let bt_task = button.task();
     let adc_task = adc.task();
 
-    let main_task = measure_task(leds, sensors, &button, &adc_values, midi_channel.sender());
+    let main_task = measure_task(leds, sensors, &button, &adc_values, midi_tx);
 
-    join4(main_task, bt_task, adc_task, midi_task).await;
+    join3(main_task, bt_task, adc_task).await;
+
+    unreachable!();
+}
+
+#[embassy_executor::task]
+async fn core1_task(b: crate::board::Core1Pers, midi_c0_rx: MidiChannelMCReceiver<'static>) -> ! {
+
+    let midi_channel = MidiChannel::new();
+    let midi_tx = midi_channel.sender();
+    let mut midi = SerialMidi::new(b.midi_uart, b.midi_tx_pin, midi_channel.receiver());
+    let midi_task = midi.task();
+
+    let midi_router_task = async {
+        loop {
+            let msg = midi_c0_rx.receive().await;
+            midi_tx.send(msg).await;
+        }
+    };
+
+    join(midi_router_task, midi_task).await;
 
     unreachable!();
 }
@@ -65,7 +105,7 @@ async fn measure_task<'a>(
     mut sensors: TouchSensors<'a>,
     button: &Button<'a>,
     adc_values: &'a AdcValues,
-    midi_tx: MidiChannelSender<'a>,
+    midi_tx: MidiChannelMCSender<'a>,
 ) {
     let mut colors = [COL_UNUSED; NUM_LEDS];
 
