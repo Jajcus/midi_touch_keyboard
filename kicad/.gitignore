@@ -3,3 +3,5 @@ fp-info-cache
 *.log
 touch_keyboard-backups/
 bom/
+fab/
+fab-nc/

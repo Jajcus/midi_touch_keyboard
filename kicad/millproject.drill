@@ -1,0 +1,19 @@
+# pcb2gcode configuration
+
+output-dir=fab-nc
+metric=1
+metricoutput=1
+nog64=1
+nom6=1
+nog81=1
+
+drill=fab/touch_keyboard.drl
+zdrill=-2
+drill-feed=20
+drill-speed=700
+drill-side=front
+
+mirror-axis=1
+
+zsafe=1
+zchange=25
