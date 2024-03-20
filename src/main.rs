@@ -162,10 +162,14 @@ async fn measure_task<'a>(
                 Some(led) => &mut colors[*led],
             };
             let status = result.pins[i].status;
-            *color = match status {
-                CalibrationStatus::NA => COL_OFF,
-                CalibrationStatus::Ok => COL_OFF,
-                CalibrationStatus::Bad => COL_BROKEN,
+            let piano_key = SENSOR_TO_PIANO_KEY[i];
+            *color = match (status, piano_key) {
+                (CalibrationStatus::NA, PianoKey::White) => COL_WHITE_OFF,
+                (CalibrationStatus::NA, PianoKey::Black) => COL_BLACK_OFF,
+                (CalibrationStatus::Ok, PianoKey::White) => COL_WHITE_OFF,
+                (CalibrationStatus::Ok, PianoKey::Black) => COL_BLACK_OFF,
+                (CalibrationStatus::Bad, _) => COL_BROKEN,
+                (_, PianoKey::Missing) => COL_UNUSED,
             }
         }
         leds.write(&colors).await;
@@ -191,9 +195,13 @@ async fn measure_task<'a>(
                     }
                 };
                 *prev = *cur;
-                let color = match *cur {
-                    TouchSensorStatus::On => COL_ON,
-                    TouchSensorStatus::Off => COL_OFF,
+                let piano_key = SENSOR_TO_PIANO_KEY[i];
+                let color = match (*cur, piano_key) {
+                    (TouchSensorStatus::Off, PianoKey::White) => COL_WHITE_OFF,
+                    (TouchSensorStatus::Off, PianoKey::Black) => COL_BLACK_OFF,
+                    (TouchSensorStatus::On, PianoKey::White) => COL_WHITE_ON,
+                    (TouchSensorStatus::On, PianoKey::Black) => COL_BLACK_ON,
+                    (_, PianoKey::Missing) => COL_UNUSED,
                     _ => unreachable!(),
                 };
                 let maybe_note_nr = if let Some(nr) = SENSOR_TO_NOTE[i] {

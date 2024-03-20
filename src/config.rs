@@ -16,10 +16,21 @@ pub const WELCOME_COLORS: [u32; NUM_LEDS] = [
     0x008000, 0x000080, 0x40000, 0x004000, 0x000040, 0x20000, 0x002000, 0x000020, 0x10000,
 ];
 
-pub const COL_OFF: u32 = 0x020202;
-pub const COL_ON: u32 = 0x101010;
+pub const COL_WHITE_OFF: u32 = 0x020202;
+pub const COL_WHITE_ON: u32 = 0x101010;
+pub const COL_BLACK_OFF: u32 = 0x000101;
+pub const COL_BLACK_ON: u32 = 0x00808;
 pub const COL_BROKEN: u32 = 0x010000;
 pub const COL_UNUSED: u32 = 0x000000;
+
+#[derive(Clone, Copy)]
+pub enum PianoKey {
+    White,
+    Black,
+
+    #[allow(dead_code)]
+    Missing,
+}
 
 // must be still valid (just brighter) when multiplied by 4
 pub const COL_CAL_NA: u32 = 0x020100;
@@ -66,6 +77,27 @@ pub const SENSOR_TO_NOTE: [Option<i8>; NUM_SENSORS] = [
     Some(13), // C#
     Some(14), // D
 ];
+
+// mapping of sensors to piano key colors
+pub const SENSOR_TO_PIANO_KEY: [PianoKey; NUM_SENSORS] = [
+    PianoKey::White, // B
+    PianoKey::White, // C
+    PianoKey::Black, // C#
+    PianoKey::White, // D
+    PianoKey::Black, // D#
+    PianoKey::White, // E
+    PianoKey::White, // F
+    PianoKey::Black, // F#
+    PianoKey::White, // G
+    PianoKey::Black, // G#
+    PianoKey::White, // A
+    PianoKey::Black, // A#
+    PianoKey::White, // B
+    PianoKey::White, // C
+    PianoKey::Black, // C#
+    PianoKey::White, // D
+];
+
 
 // button
 pub const DEBOUNCE_TIME: Duration = Duration::from_millis(2);
