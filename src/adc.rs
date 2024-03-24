@@ -54,6 +54,12 @@ impl<'d> Adc<'d> {
     }
 }
 
+impl Default for AdcValues {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AdcValues {
     pub fn new() -> Self {
         Self {
