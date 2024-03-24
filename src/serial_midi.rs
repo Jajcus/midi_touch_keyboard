@@ -31,6 +31,7 @@ impl<'d> SerialMidi<'d> {
     pub async fn task(&mut self) -> ! {
         loop {
             let msg = self.midi_rx.receive().await;
+            info!("serial: msg: {}", msg);
             if let Err(err) = msg.send_bytes(&mut self.uart).await {
                 info!("Midi send error: {}", err);
             }

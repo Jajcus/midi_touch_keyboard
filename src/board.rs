@@ -13,8 +13,11 @@ pub type AdcPins = (PIN_28, PIN_29);
 pub type MidiUart = UART0;
 pub type MidiTxPin = PIN_0;
 
+pub type MidiUsb = USB;
+
 bind_interrupts!(pub struct Irqs {
     UART0_IRQ => embassy_rp::uart::BufferedInterruptHandler<MidiUart>;
+    USBCTRL_IRQ => embassy_rp::usb::InterruptHandler<USB>;
 });
 
 pub struct Core0Pers {
@@ -32,6 +35,7 @@ pub struct Core0Pers {
 pub struct Core1Pers {
     pub midi_uart: MidiUart,
     pub midi_tx_pin: MidiTxPin,
+    pub midi_usb: MidiUsb,
 }
 
 pub struct BoardSetup {
@@ -77,6 +81,7 @@ pub fn init(p: Peripherals) -> BoardSetup {
         core1: Core1Pers {
             midi_uart: p.UART0,
             midi_tx_pin: p.PIN_0,
+            midi_usb: p.USB,
         },
         core1_core: p.CORE1,
     }

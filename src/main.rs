@@ -5,13 +5,14 @@
 #![no_std]
 #![no_main]
 
+use core::ptr::addr_of_mut;
 use defmt::{unreachable, *};
-use embassy_futures::join::{join3, join};
-use embassy_time::{Duration, Timer};
 use embassy_executor::Executor;
-use {defmt_rtt as _, panic_probe as _};
+use embassy_futures::join::join3;
 use embassy_rp::multicore::{spawn_core1, Stack};
+use embassy_time::{Duration, Timer};
 use static_cell::StaticCell;
+use {defmt_rtt as _, panic_probe as _};
 
 mod adc;
 mod board;
@@ -20,19 +21,23 @@ mod config;
 mod midi;
 mod serial_midi;
 mod touch_sensors;
+mod usb_midi;
 mod ws2812b;
 
 use crate::adc::{Adc, AdcValues};
 use crate::button::Button;
 use crate::config::*;
-use crate::midi::{MidiChannel, MidiChannelMC, MidiChannelMCSender, MidiChannelMCReceiver, MidiMsg};
+use crate::midi::{
+    MidiChannel, MidiChannelMC, MidiChannelMCReceiver, MidiChannelMCSender, MidiMsg,
+};
 use crate::serial_midi::SerialMidi;
 use crate::touch_sensors::{CalibrationStatus, TouchSensorStatus, TouchSensors};
+use crate::usb_midi::UsbMidi;
 use crate::ws2812b::WS2812B;
 
 static EXECUTOR0: StaticCell<Executor> = StaticCell::new();
 static EXECUTOR1: StaticCell<Executor> = StaticCell::new();
-static mut CORE1_STACK: Stack<81920> = Stack::new();
+static mut CORE1_STACK: Stack<102400> = Stack::new();
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
@@ -48,21 +53,22 @@ fn main() -> ! {
 
     static MIDI_CHANNEL: MidiChannelMC = MidiChannelMC::new();
 
-    spawn_core1(b.core1_core, unsafe { &mut CORE1_STACK }, move || {
-        let executor1 = EXECUTOR1.init(Executor::new());
-        executor1
-            .run(|spawner| unwrap!(spawner.spawn(core1_task(b.core1, MIDI_CHANNEL.receiver()))))
-    });
+    spawn_core1(
+        b.core1_core,
+        unsafe { &mut *addr_of_mut!(CORE1_STACK) },
+        move || {
+            let executor1 = EXECUTOR1.init(Executor::new());
+            executor1
+                .run(|spawner| unwrap!(spawner.spawn(core1_task(b.core1, MIDI_CHANNEL.receiver()))))
+        },
+    );
 
     let executor0 = EXECUTOR0.init(Executor::new());
-    executor0.run(|spawner| {
-        unwrap!(spawner.spawn(core0_task(b.core0, MIDI_CHANNEL.sender())))
-    })
+    executor0.run(|spawner| unwrap!(spawner.spawn(core0_task(b.core0, MIDI_CHANNEL.sender()))))
 }
 
 #[embassy_executor::task]
 async fn core0_task(b: crate::board::Core0Pers, midi_tx: MidiChannelMCSender<'static>) -> ! {
-
     let leds = WS2812B::new(b.leds_pio, b.leds_pin);
     let sensors = TouchSensors::new(b.sensor_pins);
 
@@ -82,20 +88,25 @@ async fn core0_task(b: crate::board::Core0Pers, midi_tx: MidiChannelMCSender<'st
 
 #[embassy_executor::task]
 async fn core1_task(b: crate::board::Core1Pers, midi_c0_rx: MidiChannelMCReceiver<'static>) -> ! {
-
-    let midi_channel = MidiChannel::new();
-    let midi_tx = midi_channel.sender();
-    let mut midi = SerialMidi::new(b.midi_uart, b.midi_tx_pin, midi_channel.receiver());
-    let midi_task = midi.task();
+    let serial_midi_channel = MidiChannel::new();
+    let serial_midi_tx = serial_midi_channel.sender();
+    let usb_midi_channel = MidiChannel::new();
+    let usb_midi_tx = usb_midi_channel.sender();
+    let mut serial_midi =
+        SerialMidi::new(b.midi_uart, b.midi_tx_pin, serial_midi_channel.receiver());
+    let mut usb_midi = UsbMidi::new(b.midi_usb, usb_midi_channel.receiver());
+    let serial_midi_task = serial_midi.task();
+    let usb_midi_task = usb_midi.task();
 
     let midi_router_task = async {
         loop {
             let msg = midi_c0_rx.receive().await;
-            midi_tx.send(msg).await;
+            serial_midi_tx.try_send(msg).ok();
+            usb_midi_tx.try_send(msg).ok();
         }
     };
 
-    join(midi_router_task, midi_task).await;
+    join3(midi_router_task, serial_midi_task, usb_midi_task).await;
 
     unreachable!();
 }

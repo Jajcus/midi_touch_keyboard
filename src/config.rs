@@ -98,7 +98,6 @@ pub const SENSOR_TO_PIANO_KEY: [PianoKey; NUM_SENSORS] = [
     PianoKey::White, // D
 ];
 
-
 // button
 pub const DEBOUNCE_TIME: Duration = Duration::from_millis(2);
 
@@ -106,7 +105,8 @@ pub const DEBOUNCE_TIME: Duration = Duration::from_millis(2);
 pub const ADC_INTERVAL: Duration = Duration::from_millis(10);
 
 // MIDI
-pub const MIDI_CHANNEL_SIZE: usize = 16;
+// let it hold note-offs for all keys and a few more messages
+pub const MIDI_CHANNEL_SIZE: usize = 20;
 
 // serial MIDI
 pub const SERIAL_MIDI_BUF_LEN: usize = 128;
