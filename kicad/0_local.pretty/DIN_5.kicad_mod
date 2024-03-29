@@ -32,4 +32,9 @@
   (pad "5" thru_hole circle (at 5.08 7.62) (size 2 2) (drill 1) (layers "*.Cu" "*.Mask") (tstamp 0bd0a832-b0e1-43ea-86ff-02f01787a42f))
   (pad "S" thru_hole circle (at -2.54 -5.08) (size 2.5 2.5) (drill 1.4) (layers "*.Cu" "*.Mask") (tstamp f17ac7f1-ed89-442c-9bef-8a53af152a56))
   (pad "S" thru_hole circle (at 2.54 -5.08) (size 2.5 2.5) (drill 1.4) (layers "*.Cu" "*.Mask") (tstamp c8305b78-9b06-4ff7-822d-2bc2495a74ca))
+  (model "${KIPRJMOD}/0_local.pretty/DIN5_PCB_DELTRON_671-0500.STEP"
+    (offset (xyz 0 7.5 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz -90 0 180))
+  )
 )
