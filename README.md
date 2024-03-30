@@ -46,7 +46,7 @@ One pin is used to drive MIDI output. That is a standard circuit from the MIDI
 1.0 specification using a transistor as the current loop switch (with a
 Schottky diode for sharper edges).
 
-Another pin drives addressable LED strip (WS2812). Again, a transistor with a
+Another pin drives addressable LED strip (WS2812B). Again, a transistor with a
 Schottky diode is used to drive 5V data line here.
 
 Two pins are used for button (actually only one used at the moment).
