@@ -55,14 +55,7 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [
-        "clearance|138850000|102640000|adad8628-1717-427e-bbb3-619b1165167e|bf587553-e1ea-464e-bb3d-041aba178799",
-        "clearance|141390000|102640000|f49bd313-43af-423a-aa67-e22cbfb41ec7|9568a80b-ce40-4e6c-8778-07bb539104d8",
-        "clearance|143930000|102640000|cb0a16aa-66cc-48f5-a622-58f5ac00c536|49f15cfd-be42-4021-a050-c8944e1895fa",
-        "solder_mask_bridge|138850000|102640000|bf587553-e1ea-464e-bb3d-041aba178799|adad8628-1717-427e-bbb3-619b1165167e",
-        "solder_mask_bridge|141390000|102640000|9568a80b-ce40-4e6c-8778-07bb539104d8|f49bd313-43af-423a-aa67-e22cbfb41ec7",
-        "solder_mask_bridge|143930000|102640000|49f15cfd-be42-4021-a050-c8944e1895fa|cb0a16aa-66cc-48f5-a622-58f5ac00c536"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "version": 2
       },
@@ -194,6 +187,13 @@
         }
       ],
       "zones_allow_external_fillets": false
+    },
+    "ipc2581": {
+      "dist": "",
+      "distpn": "",
+      "internal_id": "",
+      "mfg": "",
+      "mpn": ""
     },
     "layer_presets": [],
     "viewports": []
@@ -453,8 +453,11 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
+      "plot": "",
+      "pos_files": "",
       "specctra_dsn": "",
       "step": "",
+      "svg": "",
       "vrml": ""
     },
     "page_layout_descr_file": ""
